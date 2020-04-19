@@ -7,6 +7,7 @@ automate nucleus detection from biomedical images.
 author: Inom Mirzaev
 github: https://github.com/mirzaevinom
 """
+
 from config import *
 from model import log
 from train import train_validation_split, KaggleDataset
@@ -33,7 +34,7 @@ def rle_encoding(x):
     run_lengths = []
     prev = -2
     for b in dots:
-        if (b > prev+1):
+        if (b > prev + 1):
             run_lengths.extend((b + 1, 0))
         run_lengths[-1] += 1
         prev = b
@@ -41,7 +42,6 @@ def rle_encoding(x):
 
 
 def prob_to_rles(masks, height, width):
-
     if masks.sum() < 1:
         masks = np.zeros([height, width, 1])
         # print('no masks')
@@ -66,7 +66,7 @@ def plot_boundary(image, true_masks=None, pred_masks=None, ax=None):
         n_rows = 1
         n_cols = 1
 
-        fig = plt.figure(figsize=[4*n_cols, int(4*n_rows)])
+        fig = plt.figure(figsize=[4 * n_cols, int(4 * n_rows)])
         gs = gridspec.GridSpec(n_rows, n_cols)
 
         ax = fig.add_subplot(gs[0])
@@ -84,7 +84,6 @@ def plot_boundary(image, true_masks=None, pred_masks=None, ax=None):
 
             for n, contour in enumerate(contours):
                 ax.plot(contour[:, 1], contour[:, 0], linewidth=1, color='g')
-
 
     ax.axis('image')
     ax.set_xticks([])
@@ -110,17 +109,15 @@ def plot_train(train_path='../data/stage1_train/'):
 
     image_ids = dataset_train.image_ids
     for mm, image_id in tqdm(enumerate(image_ids)):
-
         image = dataset_train.load_image(image_id, color='RGB')
         masks, class_ids = dataset_train.load_mask(image_id)
         fig = plot_boundary(image, true_masks=masks)
-        fig.savefig('../train_images/train_'+str(mm) +
+        fig.savefig('../train_images/train_' + str(mm) +
                     '.png', bbox_inches='tight')
         plt.close()
 
 
 def get_model(config, model_path=None):
-
     """
     Loads and returns MaskRCNN model for a given config and weights.
     """
@@ -153,7 +150,6 @@ def get_model(config, model_path=None):
 
 
 def ensemble_prediction(model, config, image):
-
     """ Test time augmentation method using non-maximum supression"""
 
     masks = []
@@ -205,7 +201,6 @@ def ensemble_prediction(model, config, image):
 
 
 def cluster_prediction(model, config, image):
-
     """ Test time augmentation method using bounding box IoU"""
     # from utils import non_max_suppression, extract_bboxes, compute_overlaps
     height, width = image.shape[:2]
@@ -246,7 +241,6 @@ def cluster_prediction(model, config, image):
 
 
 def postprocess_masks(result, image, min_nuc_size=10):
-
     """Clean overlaps between bounding boxes, fill small holes, smooth boundaries"""
 
     height, width = image.shape[:2]
@@ -297,13 +291,12 @@ def postprocess_masks(result, image, min_nuc_size=10):
 
 
 def eval_n_plot_val(model, config, dataset_val, save_plots=False):
-
     scores = []
     image_ids = dataset_val.image_ids
 
     for mm, image_id in tqdm(enumerate(image_ids)):
         # Load image and ground truth data
-        image = dataset_val.load_image(image_id,  color=config.IMAGE_COLOR)
+        image = dataset_val.load_image(image_id, color=config.IMAGE_COLOR)
         gt_mask, gt_class_id = dataset_val.load_mask(image_id)
 
         img_name = dataset_val.image_info[image_id]['img_name']
@@ -317,14 +310,14 @@ def eval_n_plot_val(model, config, dataset_val, save_plots=False):
         # If there is no masks then try to predict on scaled image
         if result['masks'].sum() < 2:
             H, W = image.shape[:2]
-            scaled_img = np.zeros([4*H, 4*W, 3], np.uint8)
+            scaled_img = np.zeros([4 * H, 4 * W, 3], np.uint8)
             scaled_img[:H, :W] = image
             result = cluster_prediction(model, config, scaled_img)
             result['masks'] = result['masks'][:H, :W]
             result = postprocess_masks(result, image)
 
         pred_box, pred_class_id, pred_score, pred_mask = result['rois'], result['class_ids'], \
-            result['scores'], result['masks']
+                                                         result['scores'], result['masks']
 
         gt_box = utils.extract_bboxes(gt_mask)
         # Compute IoU scores for ground truth and predictions
@@ -333,30 +326,35 @@ def eval_n_plot_val(model, config, dataset_val, save_plots=False):
                                      iou_thresholds=None, verbose=0)
         # iou = mean_iou(gt_mask, pred_masks)
         if save_plots:
-
             fig = plt.figure()
             gs = gridspec.GridSpec(1, 1)
             plot_boundary(image, true_masks=gt_mask, pred_masks=pred_mask,
                           ax=fig.add_subplot(gs[0]))
 
-            fig.savefig('../images/validation_'+str(mm)+'.png', bbox_inches='tight')
+            fig.savefig('../images/validation_' + str(mm) + '.png', bbox_inches='tight')
             plt.close()
 
         scores.append(iou)
-        if (mm+1) % 10 == 0:
-            print('Mean IoU for', mm+1, 'imgs', np.mean(scores))
+        if (mm + 1) % 10 == 0:
+            print('Mean IoU for', mm + 1, 'imgs', np.mean(scores))
 
     print("Mean IoU: ", np.mean(scores))
 
 
-def pred_n_plot_test(model, config, test_path='../data/stage2_test_final/', save_plots=False):
+def pred_n_plot_test(model, config, test_path='../data/stage2_test_final/', output_path="output_path", save_plots=False):
     """
     Predicts nuclei for each image, draws the boundaries and saves in images folder.
 
     """
     # Create images folder if doesn't exist.
-    if not os.path.isdir('../images'):
-        os.mkdir('../images')
+
+    images_annotated_output_path = output_path + 'images_annotated'
+    if not os.path.isdir(images_annotated_output_path):
+        os.mkdir(images_annotated_output_path)
+
+    images_original_output_path = output_path + 'images_original'
+    if not os.path.isdir(images_original_output_path):
+        os.mkdir(images_original_output_path)
 
     # Load test dataset
     test_ids = os.listdir(test_path)
@@ -385,11 +383,13 @@ def pred_n_plot_test(model, config, test_path='../data/stage2_test_final/', save
         # Clean overlaps and apply some post-processing
         result = postprocess_masks(result, image)
 
+        print("HEY")
         print(len(result['masks']))
+        print("HEY OVER")
         # If there is no masks then try to predict on scaled image
         if result['masks'].sum() < 2:
             H, W = image.shape[:2]
-            scaled_img = np.zeros([4*H, 4*W, 3], np.uint8)
+            scaled_img = np.zeros([4 * H, 4 * W, 3], np.uint8)
             scaled_img[:H, :W] = image
             result = cluster_prediction(model, config, scaled_img)
             result['masks'] = result['masks'][:H, :W]
@@ -397,7 +397,6 @@ def pred_n_plot_test(model, config, test_path='../data/stage2_test_final/', save
 
         if result['masks'].sum() < 1:
             no_masks += 1
-
 
         # print(result['masks'].shape)
         # fig = plt.figure(figsize=(16, 16))
@@ -418,14 +417,28 @@ def pred_n_plot_test(model, config, test_path='../data/stage2_test_final/', save
             plot_boundary(image, true_masks=None, pred_masks=result['masks'],
                           ax=fig.add_subplot(gs[0]))
 
-            fig.savefig('../images/' + str(image_id) + "_" + str(result['masks'].shape[2]) + '.png', bbox_inches='tight')
+            fig.savefig(
+                images_annotated_output_path + '/' + str(image_id) + "_" + str(result['masks'].shape[2]) + '.png',
+                bbox_inches='tight')
+
+            plt.close()
+
+            fig = plt.figure()
+            gs = gridspec.GridSpec(1, 1)
+            plot_boundary(image, true_masks=None, pred_masks=None,
+                          ax=fig.add_subplot(gs[0]))
+
+            fig.savefig(
+                images_annotated_output_path + '/' + str(image_id) + "_" + str(result['masks'].shape[2]) + '.png',
+                bbox_inches='tight')
+
             plt.close()
 
     sub = pd.DataFrame()
     sub['ImageId'] = new_test_ids
     sub['EncodedPixels'] = pd.Series(rles).apply(lambda x: ' '.join(str(y) for y in x))
 
-    fname = '../data/' + test_path.split('/')[-2]+'_submission.csv'
+    fname = '../data/' + test_path.split('/')[-2] + '_submission.csv'
     sub.to_csv(fname, index=False)
 
     print('Number of rows:', len(sub))
@@ -446,11 +459,13 @@ if __name__ == '__main__':
     config.display()
 
     # Predict using pre-trained weights
-    model = get_model(config, model_path='/home/kristibt/debuggingtissue/hmelo-nuclei-segmenter-and-counter/mirzaevinom/data_science_bowl_2018-master/codes/kaggle_bowl.h5')
+    model = get_model(config,
+                      model_path='/home/kristibt/debuggingtissue/high-nucleus-density-image-patch-finder/src/mirzaevinom_nuclei_segmenter/kaggle_bowl.h5')
 
     # Predict and plot boundaries for stage1 test
-    pred_n_plot_test(model, config, test_path='/home/kristibt/debuggingtissue/hmelo-nuclei-segmenter-and-counter/stage1_test/', save_plots=True)
-
+    pred_n_plot_test(model, config,
+                     test_path='/home/kristibt/test/debuggingtissue/deep_scope_output_folder/7_reorganize_directories_for_segmentor/TCGA-V1-A8MU-01Z-00-DX1.2C9CED13-5C2C-4FFB-AB0B-3904BAA4FEFF/',
+                     save_plots=True)
 
     # Save supercomputer log file locally
     if 'PBS_JOBID' in os.environ.keys():
@@ -458,4 +473,35 @@ if __name__ == '__main__':
         fileList = list(filter(lambda x: job_id in x, os.listdir('./')))
         os.rename(fileList[0], 'log.txt')
 
-    print('Elapsed time', round((time.time() - start)/60, 1), 'minutes')
+    print('Elapsed time', round((time.time() - start) / 60, 1), 'minutes')
+
+
+def predict_and_output_results(case_id_path, output_directory_path):
+    import time
+
+    start = time.time()
+
+    # Create model configuration in inference mode
+    config = KaggleBowlConfig()
+    config.GPU_COUNT = 0
+    config.BATCH_SIZE = 1
+    config.IMAGES_PER_GPU = 1
+    config.display()
+
+    # Predict using pre-trained weights
+    model = get_model(config,
+                      model_path='src/mirzaevinom_nuclei_segmenter/kaggle_bowl.h5')
+
+    # Predict and plot boundaries for stage1 test
+    pred_n_plot_test(model, config,
+                     test_path=case_id_path,
+                     output_path=output_directory_path,
+                     save_plots = True)
+
+    # Save supercomputer log file locally
+    if 'PBS_JOBID' in os.environ.keys():
+        job_id = os.environ['PBS_JOBID'][:7]
+        fileList = list(filter(lambda x: job_id in x, os.listdir('./')))
+        os.rename(fileList[0], 'log.txt')
+
+        print('Elapsed time', round((time.time() - start) / 60, 1), 'minutes')

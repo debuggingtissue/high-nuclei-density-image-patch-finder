@@ -6,8 +6,9 @@
 
 S0_VIRTUAL_ENV_27=${1?Error: no virtual environment directory path given}
 S0_VIRTUAL_ENV_36=${2?Error: no virtual environment directory path given}
-S0_INPUT_DIRECTORY_PATH=${3?Error: no input directory path given}
-S0_OUTPUT_DIRECTORY_PATH=${4?Error: no output directory path given}
+S0_VIRTUAL_NUCLEI_ENV_36=${3?Error: no virtual environment directory path given}
+S0_INPUT_DIRECTORY_PATH=${4?Error: no input directory path given}
+S0_OUTPUT_DIRECTORY_PATH=${5?Error: no output directory path given}
 
 ###################################
 #             CONFIG              #
@@ -55,3 +56,13 @@ S5_CREATE_HIGH_RESOLUTION_IMAGE_WINDOW_SIZE=800
 S6_PREPROCESS_HIGH_RESOLUTION_IMAGE_PATCHES_INPUT_DIRECTORY_PATH=${S5_CREATE_HIGH_RESOLUTION_IMAGE_PATCHES_OUTPUT_DIRECTORY_PATH}
 S6_PREPROCESS_HIGH_RESOLUTION_IMAGE_PATCHES_OUTPUT_DIRECTORY_PATH="${S0_OUTPUT_DIRECTORY_PATH}/6_preprocess_high_resolution_image_patches"
 S6_HIGH_RESOLUTION_IMAGE_PATCH_DOWNSCALED_SIZE=512
+
+# 7_reorganize_directories_for_segmentor
+#####################################
+S7_REORGANIZE_DIRECTORIES_FOR_SEGMENTOR_INPUT_DIRECTORY_PATH=${S6_PREPROCESS_HIGH_RESOLUTION_IMAGE_PATCHES_OUTPUT_DIRECTORY_PATH}
+S7_REORGANIZE_DIRECTORIES_FOR_SEGMENTOR_OUTPUT_DIRECTORY_PATH="${S0_OUTPUT_DIRECTORY_PATH}/7_reorganize_directories_for_segmentor"
+
+# 8_find_sub_image_patch_with_highest_nuclei_density_in_high_resolution_image_patch
+#####################################
+S8_NUCLEI_SEGMENTOR_INPUT_DIRECTORY_PATH=${S7_REORGANIZE_DIRECTORIES_FOR_SEGMENTOR_OUTPUT_DIRECTORY_PATH}
+S8_NUCLEI_SEGMENTOR_OUTPUT_DIRECTORY_PATH="${S0_OUTPUT_DIRECTORY_PATH}/8_find_sub_image_patch_with_highest_nuclei_density_in_high_resolution_image_patch"

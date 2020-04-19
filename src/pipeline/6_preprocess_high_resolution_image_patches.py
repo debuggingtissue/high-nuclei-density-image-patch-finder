@@ -7,7 +7,7 @@ from utils import path_utils, image_preprocessing_utils
 def output_preprocessed_image_patch_to_output_directory(full_image_path,
                                                         output_directory_path,
                                                         downscale_to_size):
-    input_image = Image.open(full_image_path)
+    input_image = Image.open(full_image_path).convert('LA')
 
     scaled_image = image_preprocessing_utils.scale_image(input_image, downscale_to_size)
 
@@ -18,7 +18,7 @@ def output_preprocessed_image_patch_to_output_directory(full_image_path,
     path_utils.create_directory_if_directory_does_not_exist_at_path(output_case_subfolder)
 
     output_image_name = join(output_case_subfolder,
-                             image_patch_id + '.jpg')
+                             image_patch_id + '.png')
     scaled_image.save(output_image_name)
 
 
