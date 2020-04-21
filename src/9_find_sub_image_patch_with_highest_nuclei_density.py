@@ -1,12 +1,30 @@
 import argparse
 from utils import path_utils, image_patch_file_name_parser
 from mirzaevinom_nuclei_segmenter import predict
+import shutil
 
 def output_image_patch_with_highest_predicted_nuclei_count(image_patches_path, output_diretory_path):
     image_patch_paths = path_utils.create_full_paths_to_files_in_directory_path(image_patches_path)
+    image_patch_path_with_highest_nuclei_count = None
+    highest_nuclei_count = 0
     for image_patch_path in image_patch_paths:
         image_patch_file_name = image_patch_path.split('/')[-1]
-        image_patch_file_name_parser.parse_image_patch_for_nuclei_count_prediction(image_patch_file_name)
+        predicted_nuclei_count = int(image_patch_file_name_parser.parse_image_patch_for_nuclei_count_prediction(image_patch_file_name))
+        print(predicted_nuclei_count)
+        print(highest_nuclei_count)
+        if predicted_nuclei_count >= highest_nuclei_count:
+            image_patch_path_with_highest_nuclei_count = image_patch_path
+            highest_nuclei_count = predicted_nuclei_count
+
+    image_patch_file = image_patch_path_with_highest_nuclei_count.split('/')[-1]
+    new_image_patch_path = output_diretory_path + "/" + image_patch_file
+
+    # print("FROM = " + image_patch_path_with_highest_nuclei_count)
+    # print("TO = " + new_image_patch_path)
+
+    shutil.move(image_patch_path_with_highest_nuclei_count, new_image_patch_path)
+
+    # print("***********")
 
 parser = argparse.ArgumentParser(description="Finding the image patch with the highest nuclei density for each case")
 parser.add_argument("-i", "--input_folder_path", type=str, help="The path to the input folder.", required=True)

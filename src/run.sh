@@ -50,10 +50,10 @@ source config.sh
 #  -i $S7_REORGANIZE_DIRECTORIES_FOR_SEGMENTOR_INPUT_DIRECTORY_PATH \
 #  -o $S7_REORGANIZE_DIRECTORIES_FOR_SEGMENTOR_OUTPUT_DIRECTORY_PATH
 
-#source "${S0_VIRTUAL_NUCLEI_ENV_36}/bin/activate"
-#python3.6 8_count_and_annotate_nuclei_in_sub_image_patches.py \
-#  -i $S8_NUCLEI_SEGMENTOR_INPUT_DIRECTORY_PATH \
-#  -o $S8_NUCLEI_SEGMENTOR_OUTPUT_DIRECTORY_PATH
+source "${S0_VIRTUAL_NUCLEI_ENV_36}/bin/activate"
+python3.6 8_count_and_annotate_nuclei_in_sub_image_patches.py \
+  -i $S8_NUCLEI_SEGMENTOR_INPUT_DIRECTORY_PATH \
+  -o $S8_NUCLEI_SEGMENTOR_OUTPUT_DIRECTORY_PATH
 
 python3.6 9_find_sub_image_patch_with_highest_nuclei_density.py \
   -i $S9_FIND_SUB_IMAGE_PATCH_WITH_HIGHEST_NUCLEI_DENSITY_INPUT_DIRECTORY_PATH \
