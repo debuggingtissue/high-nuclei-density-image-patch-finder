@@ -8,9 +8,11 @@ author: Inom Mirzaev
 github: https://github.com/mirzaevinom
 """
 
-from config import *
-from model import log
-from train import train_validation_split, KaggleDataset
+from mirzaevinom_nuclei_segmenter import config
+from mirzaevinom_nuclei_segmenter import model
+from mirzaevinom_nuclei_segmenter import train
+from mirzaevinom_nuclei_segmenter import utils
+from utils import image_patch_file_name_builder
 
 import matplotlib.pyplot as plt
 
@@ -23,9 +25,9 @@ import numpy as np
 
 import random
 import pandas as pd
-from metrics import mean_iou
 from tqdm import tqdm
-
+from mirzaevinom_nuclei_segmenter import metrics
+import os
 plt.switch_backend('agg')
 
 
@@ -59,8 +61,8 @@ def plot_boundary(image, true_masks=None, pred_masks=None, ax=None):
     Plots provided boundaries of nuclei for a given image.
     """
 
-    print(image.shape)
-    print(pred_masks.shape)
+    # print(image.shape)
+    # print(pred_masks.shape)
 
     if ax is None:
         n_rows = 1
@@ -117,19 +119,19 @@ def plot_train(train_path='../data/stage1_train/'):
         plt.close()
 
 
-def get_model(config, model_path=None):
+def get_model(config_, model_path=None):
     """
     Loads and returns MaskRCNN model for a given config and weights.
     """
-    model = modellib.MaskRCNN(mode="inference",
-                              config=config,
-                              model_dir=MODEL_DIR)
+    model_ = model.MaskRCNN(mode="inference",
+                              config=config_,
+                              model_dir=config.MODEL_DIR)
 
     # Get path to saved weights
     # Either set a specific path or find last trained weights
     # model_path = os.path.join(ROOT_DIR, ".h5 file name here")
     if model_path is None:
-        model_path = model.find_last()[1]
+        model_path = model_.find_last()[1]
         try:
             os.rename(model_path, model_path)
             print('Access on file ' + model_path + ' is available!')
@@ -144,9 +146,9 @@ def get_model(config, model_path=None):
     assert model_path != "", "Provide path to trained weights"
     print("Loading weights from ", model_path)
 
-    model.load_weights(model_path, by_name=True)
+    model_.load_weights(model_path, by_name=True)
 
-    return model
+    return model_
 
 
 def ensemble_prediction(model, config, image):
@@ -341,24 +343,25 @@ def eval_n_plot_val(model, config, dataset_val, save_plots=False):
     print("Mean IoU: ", np.mean(scores))
 
 
-def pred_n_plot_test(model, config, test_path='../data/stage2_test_final/', output_path="output_path", save_plots=False):
+def pred_n_plot_test(model, config_, test_path='../data/stage2_test_final/', output_path="output_path", save_plots=False):
     """
     Predicts nuclei for each image, draws the boundaries and saves in images folder.
 
     """
     # Create images folder if doesn't exist.
+    print(output_path)
 
-    images_annotated_output_path = output_path + 'images_annotated'
+    images_annotated_output_path = output_path + "/" + 'images_annotated'
     if not os.path.isdir(images_annotated_output_path):
         os.mkdir(images_annotated_output_path)
 
-    images_original_output_path = output_path + 'images_original'
+    images_original_output_path = output_path + "/" + 'images_original'
     if not os.path.isdir(images_original_output_path):
         os.mkdir(images_original_output_path)
 
     # Load test dataset
     test_ids = os.listdir(test_path)
-    dataset_test = KaggleDataset()
+    dataset_test = train.KaggleDataset()
     dataset_test.load_shapes(test_ids, test_path)
     dataset_test.prepare()
 
@@ -370,14 +373,14 @@ def pred_n_plot_test(model, config, test_path='../data/stage2_test_final/', outp
 
     for mm, image_id in tqdm(enumerate(dataset_test.image_ids)):
         # Load the image
-        image = dataset_test.load_image(image_id, color=config.IMAGE_COLOR)
+        image = dataset_test.load_image(image_id, color=config_.IMAGE_COLOR)
 
         # Image name for submission rows.
         image_id = dataset_test.image_info[image_id]['img_name']
         height, width = image.shape[:2]
 
         # result = ensemble_prediction(model, config, image)
-        result = cluster_prediction(model, config, image)
+        result = cluster_prediction(model, config_, image)
         # result = model.detect([image], verbose=0, mask_threshold=config.DETECTION_MASK_THRESHOLD)[0]
 
         # Clean overlaps and apply some post-processing
@@ -391,7 +394,7 @@ def pred_n_plot_test(model, config, test_path='../data/stage2_test_final/', outp
             H, W = image.shape[:2]
             scaled_img = np.zeros([4 * H, 4 * W, 3], np.uint8)
             scaled_img[:H, :W] = image
-            result = cluster_prediction(model, config, scaled_img)
+            result = cluster_prediction(model, config_, scaled_img)
             result['masks'] = result['masks'][:H, :W]
             result = postprocess_masks(result, image)
 
@@ -416,20 +419,17 @@ def pred_n_plot_test(model, config, test_path='../data/stage2_test_final/', outp
             gs = gridspec.GridSpec(1, 1)
             plot_boundary(image, true_masks=None, pred_masks=result['masks'],
                           ax=fig.add_subplot(gs[0]))
-
+            image_patch_file_name = image_patch_file_name_builder.extend_image_patch_nuclei_count(str(image_id), str(result['masks'].shape[2]))
             fig.savefig(
-                images_annotated_output_path + '/' + str(image_id) + "_" + str(result['masks'].shape[2]) + '.png',
+                images_annotated_output_path + '/' + image_patch_file_name + '.png',
                 bbox_inches='tight')
 
-            plt.close()
 
-            fig = plt.figure()
-            gs = gridspec.GridSpec(1, 1)
             plot_boundary(image, true_masks=None, pred_masks=None,
                           ax=fig.add_subplot(gs[0]))
 
             fig.savefig(
-                images_annotated_output_path + '/' + str(image_id) + "_" + str(result['masks'].shape[2]) + '.png',
+                images_original_output_path + '/' + image_patch_file_name + '.png',
                 bbox_inches='tight')
 
             plt.close()
@@ -452,7 +452,7 @@ if __name__ == '__main__':
     start = time.time()
 
     # Create model configuration in inference mode
-    config = KaggleBowlConfig()
+    config = config.KaggleBowlConfig()
     config.GPU_COUNT = 0
     config.BATCH_SIZE = 1
     config.IMAGES_PER_GPU = 1
@@ -460,11 +460,11 @@ if __name__ == '__main__':
 
     # Predict using pre-trained weights
     model = get_model(config,
-                      model_path='/home/kristibt/debuggingtissue/high-nucleus-density-image-patch-finder/src/mirzaevinom_nuclei_segmenter/kaggle_bowl.h5')
+                      model_path='INSERT_TEST_PATH_HERE')
 
     # Predict and plot boundaries for stage1 test
     pred_n_plot_test(model, config,
-                     test_path='/home/kristibt/test/debuggingtissue/deep_scope_output_folder/7_reorganize_directories_for_segmentor/TCGA-V1-A8MU-01Z-00-DX1.2C9CED13-5C2C-4FFB-AB0B-3904BAA4FEFF/',
+                     test_path='INSERT_TEST_PATH_HERE',
                      save_plots=True)
 
     # Save supercomputer log file locally
@@ -482,18 +482,18 @@ def predict_and_output_results(case_id_path, output_directory_path):
     start = time.time()
 
     # Create model configuration in inference mode
-    config = KaggleBowlConfig()
-    config.GPU_COUNT = 0
-    config.BATCH_SIZE = 1
-    config.IMAGES_PER_GPU = 1
-    config.display()
+    config_ = config.KaggleBowlConfig()
+    config_.GPU_COUNT = 0
+    config_.BATCH_SIZE = 1
+    config_.IMAGES_PER_GPU = 1
+    config_.display()
 
     # Predict using pre-trained weights
-    model = get_model(config,
-                      model_path='src/mirzaevinom_nuclei_segmenter/kaggle_bowl.h5')
+    model = get_model(config_,
+                      model_path='mirzaevinom_nuclei_segmenter/kaggle_bowl.h5')
 
     # Predict and plot boundaries for stage1 test
-    pred_n_plot_test(model, config,
+    pred_n_plot_test(model, config_,
                      test_path=case_id_path,
                      output_path=output_directory_path,
                      save_plots = True)

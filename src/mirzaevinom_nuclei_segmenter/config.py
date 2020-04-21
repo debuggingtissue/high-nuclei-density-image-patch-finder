@@ -16,7 +16,7 @@ import os
 import sys
 import time
 import numpy as np
-import model as modellib
+from mirzaevinom_nuclei_segmenter import model as modellib
 import math
 import utils
 import cv2

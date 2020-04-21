@@ -8,9 +8,9 @@ author: Inom Mirzaev
 github: https://github.com/mirzaevinom
 """
 
-from config import *
+from mirzaevinom_nuclei_segmenter import config
 import h5py
-
+from mirzaevinom_nuclei_segmenter import utils
 
 class KaggleDataset(utils.Dataset):
     """wrapper for loading bowl datasets
@@ -37,7 +37,7 @@ class KaggleDataset(utils.Dataset):
             '/images/' + info['img_name'] + '.png'
 
         print(path)
-        img = load_img(path, color=color)
+        img = config.load_img(path, color=color)
 
         return img
 

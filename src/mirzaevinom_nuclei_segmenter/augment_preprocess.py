@@ -8,7 +8,7 @@ author: Inom Mirzaev
 github: https://github.com/mirzaevinom
 """
 
-from config import *
+from mirzaevinom_nuclei_segmenter import config
 
 
 from xml.dom import minidom
