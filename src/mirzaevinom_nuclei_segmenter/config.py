@@ -24,7 +24,6 @@ import pandas as pd
 from skimage.color import rgb2hed
 from skimage.exposure import rescale_intensity
 from scipy.ndimage.morphology import binary_fill_holes
-from tqdm import tqdm
 
 # Base Configuration Class
 # Don't use this class directly. Instead, sub-class it and override

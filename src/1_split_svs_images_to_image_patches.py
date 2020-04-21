@@ -1,11 +1,5 @@
 # Fork from https://github.com/BMIRDS/deepslide
 
-import os
-import sys
-from os import listdir
-from os.path import isfile, join
-from PIL import Image
-import openslide
 from utils import path_utils, enums, svs_utils, image_patch_file_name_builder, svs_splitter
 import argparse
 

@@ -8,5 +8,5 @@ def build_image_patch_file_name(case_id, resolution_level, x_coordinate, y_coord
         width) + SEPARATOR + HEIGHT + EQUAL + str(height) + JPEG_ENDING
 
 def extend_image_patch_nuclei_count(current_file_name, predicted_nuclei_count):
-    return current_file_name + SEPARATOR + predicted_nuclei_count + EQUAL + PREDICTION_NUCLEI_COUNT
+    return current_file_name + SEPARATOR + PREDICTION_NUCLEI_COUNT + EQUAL + predicted_nuclei_count
 

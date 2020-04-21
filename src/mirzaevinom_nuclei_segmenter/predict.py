@@ -28,6 +28,7 @@ import pandas as pd
 from tqdm import tqdm
 from mirzaevinom_nuclei_segmenter import metrics
 import os
+
 plt.switch_backend('agg')
 
 
@@ -124,8 +125,8 @@ def get_model(config_, model_path=None):
     Loads and returns MaskRCNN model for a given config and weights.
     """
     model_ = model.MaskRCNN(mode="inference",
-                              config=config_,
-                              model_dir=config.MODEL_DIR)
+                            config=config_,
+                            model_dir=config.MODEL_DIR)
 
     # Get path to saved weights
     # Either set a specific path or find last trained weights
@@ -343,7 +344,8 @@ def eval_n_plot_val(model, config, dataset_val, save_plots=False):
     print("Mean IoU: ", np.mean(scores))
 
 
-def pred_n_plot_test(model, config_, test_path='../data/stage2_test_final/', output_path="output_path", save_plots=False):
+def pred_n_plot_test(model, config_, test_path='../data/stage2_test_final/', output_path="output_path",
+                     save_plots=False):
     """
     Predicts nuclei for each image, draws the boundaries and saves in images folder.
 
@@ -415,34 +417,36 @@ def pred_n_plot_test(model, config_, test_path='../data/stage2_test_final/', out
         #     print('Number of completed images', mm+1)
 
         if save_plots:
+            image_patch_file_name = image_patch_file_name_builder.extend_image_patch_nuclei_count(str(image_id), str(
+                result['masks'].shape[2]))
+
             fig = plt.figure()
             gs = gridspec.GridSpec(1, 1)
             plot_boundary(image, true_masks=None, pred_masks=result['masks'],
                           ax=fig.add_subplot(gs[0]))
-            image_patch_file_name = image_patch_file_name_builder.extend_image_patch_nuclei_count(str(image_id), str(result['masks'].shape[2]))
             fig.savefig(
                 images_annotated_output_path + '/' + image_patch_file_name + '.png',
                 bbox_inches='tight')
+            plt.close()
 
-
+            fig = plt.figure()
+            gs = gridspec.GridSpec(1, 1)
             plot_boundary(image, true_masks=None, pred_masks=None,
                           ax=fig.add_subplot(gs[0]))
-
             fig.savefig(
                 images_original_output_path + '/' + image_patch_file_name + '.png',
                 bbox_inches='tight')
-
             plt.close()
 
-    sub = pd.DataFrame()
-    sub['ImageId'] = new_test_ids
-    sub['EncodedPixels'] = pd.Series(rles).apply(lambda x: ' '.join(str(y) for y in x))
-
-    fname = '../data/' + test_path.split('/')[-2] + '_submission.csv'
-    sub.to_csv(fname, index=False)
-
-    print('Number of rows:', len(sub))
-    print('No mask prediction for', no_masks, 'images')
+    # sub = pd.DataFrame()
+    # sub['ImageId'] = new_test_ids
+    # sub['EncodedPixels'] = pd.Series(rles).apply(lambda x: ' '.join(str(y) for y in x))
+    #
+    # fname = '../data/' + test_path.split('/')[-2] + '_submission.csv'
+    # sub.to_csv(fname, index=False)
+    #
+    # print('Number of rows:', len(sub))
+    # print('No mask prediction for', no_masks, 'images')
 
 
 if __name__ == '__main__':
@@ -496,12 +500,5 @@ def predict_and_output_results(case_id_path, output_directory_path):
     pred_n_plot_test(model, config_,
                      test_path=case_id_path,
                      output_path=output_directory_path,
-                     save_plots = True)
+                     save_plots=True)
 
-    # Save supercomputer log file locally
-    if 'PBS_JOBID' in os.environ.keys():
-        job_id = os.environ['PBS_JOBID'][:7]
-        fileList = list(filter(lambda x: job_id in x, os.listdir('./')))
-        os.rename(fileList[0], 'log.txt')
-
-        print('Elapsed time', round((time.time() - start) / 60, 1), 'minutes')

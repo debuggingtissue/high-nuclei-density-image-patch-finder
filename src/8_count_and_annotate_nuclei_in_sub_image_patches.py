@@ -7,7 +7,7 @@ def output_predictions(case_id_path, output_diretory_path):
 
 
 
-parser = argparse.ArgumentParser(description="Finding the image patch with the highest nuclei density for each case")
+parser = argparse.ArgumentParser(description="Counting the nuclei in the sub image patches")
 parser.add_argument("-i", "--input_folder_path", type=str, help="The path to the input folder.", required=True)
 parser.add_argument("-o", "--output_folder_path", type=str, help="The path to the output folder."
                                                                  " If output folder doesn't exists at runtime "
