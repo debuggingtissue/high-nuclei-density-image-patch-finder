@@ -33,7 +33,7 @@ args = parser.parse_args()
 input_folder_path = args.input_folder_path
 output_folder_path = args.output_folder_path
 start_at_image_name = args.start_at_image_name
-resolution_level = args.resolution_level
+to_resolution_level = args.resolution_level
 overlapping_percentage = float("{0:.2f}".format(args.overlap_percentage / 100))
 window_size = args.window_size
 
@@ -45,5 +45,5 @@ for full_tcga_download_directories_path in full_tcga_download_directories_paths:
     full_image_name_paths = path_utils.create_full_paths_to_files_in_directory_path(full_tcga_download_directories_path)
     for full_image_name_path in full_image_name_paths:
         output_path = output_folder_path + '/'
-    svs_splitter.split_to_jpeg_image_patches(full_image_name_path, output_path, resolution_level,
+    svs_splitter.split_to_jpeg_image_patches(full_image_name_path, output_path, to_resolution_level,
                                               overlapping_percentage, window_size)

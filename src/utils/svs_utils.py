@@ -13,7 +13,7 @@ def get_SVS_level_ratio(svs_image, from_resolution_level, to_resolution_level):
     else:
         to_resolution_level_width = svs_image.level_dimensions[to_resolution_level][0]
 
-    ratio = (from_resolution_level_width / to_resolution_level_width)
+    ratio = (to_resolution_level_width / from_resolution_level_width)
 
     return ratio
 
@@ -24,4 +24,4 @@ def get_svs_image_of_wsi_from_path(full_image_name_path):
 
 
 def scale(value, from_resolution_level, to_resolution_level, svs_image):
-    return value / get_SVS_level_ratio(svs_image, from_resolution_level, to_resolution_level)
+    return value * get_SVS_level_ratio(svs_image, from_resolution_level, to_resolution_level)

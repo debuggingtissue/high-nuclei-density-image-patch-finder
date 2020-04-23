@@ -24,17 +24,17 @@ def get_start_positions(start_position, width, height, window_size, axis, overla
 
 def split_to_jpeg_image_patches(full_image_path,
                                 full_output_path,
-                                resolution_level,
+                                to_resolution_level,
                                 overlapping_percentage,
                                 window_size,
+                                from_resolution_level=enums.ResolutionLevel.LEVEL_0_BASE,
                                 patching_area_x=None,
                                 patching_area_y=None,
                                 patching_area_width=None,
                                 patching_area_height=None):
     img = openslide.OpenSlide(full_image_path)
-    print("YO")
-    has_specific_patching_area = patching_area_x is not None and patching_area_y is not None and patching_area_width is not None and patching_area_height is not None
 
+    has_specific_patching_area = patching_area_x is not None and patching_area_y is not None and patching_area_width is not None and patching_area_height is not None
     if has_specific_patching_area:
         original_start_position_x = int(patching_area_x)
         original_start_position_y = int(patching_area_y)
@@ -42,33 +42,41 @@ def split_to_jpeg_image_patches(full_image_path,
     else:
         original_start_position_x = 0
         original_start_position_y = 0
-        width, height = img.level_dimensions[resolution_level]
+        width, height = img.level_dimensions[from_resolution_level]
 
-    print("WUT")
 
-    x_start_positions = get_start_positions(original_start_position_x, width, height, window_size, enums.Axis.X,
-                                            overlapping_percentage)
-    y_start_positions = get_start_positions(original_start_position_y, width, height, window_size, enums.Axis.Y,
-                                            overlapping_percentage)
-
-    print(x_start_positions)
-    print(y_start_positions)
     print(width)
     print(height)
     print(window_size)
 
-    total_number_of_patches = len(x_start_positions) * len(y_start_positions)
+    original_start_position_x_label = int(svs_utils.scale(
+        int(original_start_position_x), from_resolution_level, to_resolution_level, img))
+    original_start_position_y_label = int(svs_utils.scale(int(original_start_position_y), from_resolution_level, to_resolution_level, img))
+    width = int(svs_utils.scale(int(width), from_resolution_level, to_resolution_level, img))
+    height = int(svs_utils.scale(int(height), from_resolution_level, to_resolution_level, img))
+
+
+    x_start_positions_labels = get_start_positions(original_start_position_x_label, width, height, window_size, enums.Axis.X,
+                                            overlapping_percentage)
+    y_start_positions_label = get_start_positions(original_start_position_y_label, width, height, window_size, enums.Axis.Y,
+                                            overlapping_percentage)
+
+    print(x_start_positions_labels)
+    print(y_start_positions_label)
+    print(width)
+    print(height)
+    print(window_size)
+
+    total_number_of_patches = len(x_start_positions_labels) * len(y_start_positions_label)
     tile_number = 1
 
-    for x_index, x_start_position in enumerate(x_start_positions):
-        for y_index, y_start_position in enumerate(y_start_positions):
+    for x_index, x_start_position in enumerate(x_start_positions_labels):
+        for y_index, y_start_position in enumerate(y_start_positions_label):
 
             x_end_position = min(original_start_position_x + width, x_start_position + window_size)
             y_end_position = min(original_start_position_y + height, y_start_position + window_size)
             patch_width = x_end_position - x_start_position
             patch_height = y_end_position - y_start_position
-
-
 
             is_image_patch_size_equal_to_window_size = ((patch_height == window_size) and (patch_width == window_size))
             if not is_image_patch_size_equal_to_window_size:
@@ -82,22 +90,21 @@ def split_to_jpeg_image_patches(full_image_path,
             print(patch_height)
 
             print("==============")
-            SVS_level_ratio = int(svs_utils.get_SVS_level_ratio(img, resolution_level, enums.ResolutionLevel.LEVEL_0_BASE))
-            svs_x_value = x_start_position * SVS_level_ratio
-            svs_y_value = y_start_position * SVS_level_ratio
+            #must always convert to resolution 0 when doing patch extraction
+            svs_x_value = int(svs_utils.scale(x_start_position, to_resolution_level, from_resolution_level, img))
+            svs_y_value = int(svs_utils.scale(y_start_position, to_resolution_level, from_resolution_level, img))
             print("returmed ratio")
-            print(SVS_level_ratio)
             print(svs_x_value)
             print(svs_y_value)
             patch = img.read_region((svs_x_value, svs_y_value),
-                                    resolution_level,
+                                    to_resolution_level,
                                     (patch_width, patch_height))
             patch.load()
             patch_rgb = Image.new("RGB", patch.size, (255, 255, 255))
             patch_rgb.paste(patch, mask=patch.split()[3])
 
             print("\n")
-            print("Patch data", x_start_position, y_start_position, resolution_level, patch_width, patch_height)
+            print("Patch data", x_start_position, y_start_position, to_resolution_level, patch_width, patch_height)
             print("Tile size for tile number " + str(tile_number) + ":" + str(patch.size))
 
             # compress the image
@@ -114,7 +121,7 @@ def split_to_jpeg_image_patches(full_image_path,
 
             output_image_name = join(output_subfolder,
                                      image_patch_file_name_builder.build_image_patch_file_name(
-                                         case_id, resolution_level, x_start_position,
+                                         case_id, to_resolution_level, x_start_position,
                                          y_start_position, patch_width, patch_height))
 
             patch_rgb.save(output_image_name)

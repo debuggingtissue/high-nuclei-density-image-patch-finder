@@ -108,11 +108,13 @@ for full_tcga_download_directories_path_index, full_tcga_download_directory_path
                                              to_resolution_level,
                                              overlapping_percentage,
                                              window_size,
-                                             image_patch_with_highest_saliency_data_dict[
+                                             from_resolution_level=image_patch_with_highest_saliency_data_dict[
                                                  image_patch_file_name_constants.X_COORDINATE],
-                                             image_patch_with_highest_saliency_data_dict[
+                                             patching_area_x=image_patch_with_highest_saliency_data_dict[
+                                                 image_patch_file_name_constants.X_COORDINATE],
+                                             patching_area_y=image_patch_with_highest_saliency_data_dict[
                                                  image_patch_file_name_constants.Y_COORDINATE],
-                                             image_patch_with_highest_saliency_data_dict[
+                                             patching_area_width=image_patch_with_highest_saliency_data_dict[
                                                  image_patch_file_name_constants.WIDTH],
-                                             image_patch_with_highest_saliency_data_dict[
+                                             patching_area_height=image_patch_with_highest_saliency_data_dict[
                                                  image_patch_file_name_constants.HEIGHT])
