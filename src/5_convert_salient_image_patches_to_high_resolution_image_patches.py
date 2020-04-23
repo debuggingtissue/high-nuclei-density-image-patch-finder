@@ -20,7 +20,8 @@ def get_image_patch_with_highest_saliency_data_dict(full_csv_file_path, svs_imag
 
         print(maximum_prediction_row)
         resolution_level = int(maximum_prediction_row[image_patch_file_name_constants.RESOLUTION_LEVEL])
-
+        print(resolution_level)
+        print(to_resolution_level)
         x_coordinate = svs_utils.scale(int(maximum_prediction_row[image_patch_file_name_constants.X_COORDINATE]),
                                        resolution_level, to_resolution_level, svs_image)
         y_coordinate = svs_utils.scale(int(maximum_prediction_row[image_patch_file_name_constants.Y_COORDINATE]),
@@ -100,6 +101,7 @@ for full_tcga_download_directories_path_index, full_tcga_download_directory_path
                                                                                                   svs_image,
                                                                                                   to_resolution_level)
     print(image_patch_with_highest_saliency_data_dict)
+    print("HEY")
 
     svs_splitter.split_to_jpeg_image_patches(first_image_name_path,
                                              output_folder_path,

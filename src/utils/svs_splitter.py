@@ -32,26 +32,30 @@ def split_to_jpeg_image_patches(full_image_path,
                                 patching_area_width=None,
                                 patching_area_height=None):
     img = openslide.OpenSlide(full_image_path)
-
+    print("YO")
     has_specific_patching_area = patching_area_x is not None and patching_area_y is not None and patching_area_width is not None and patching_area_height is not None
 
     if has_specific_patching_area:
-        start_position_x = int(patching_area_x)
-        start_position_y = int(patching_area_y)
+        original_start_position_x = int(patching_area_x)
+        original_start_position_y = int(patching_area_y)
         width, height = int(patching_area_width), int(patching_area_height)
     else:
-        start_position_x = 0
-        start_position_y = 0
+        original_start_position_x = 0
+        original_start_position_y = 0
         width, height = img.level_dimensions[resolution_level]
 
+    print("WUT")
 
-    x_start_positions = get_start_positions(start_position_x, width, height, window_size, enums.Axis.X,
+    x_start_positions = get_start_positions(original_start_position_x, width, height, window_size, enums.Axis.X,
                                             overlapping_percentage)
-    y_start_positions = get_start_positions(start_position_y, width, height, window_size, enums.Axis.Y,
+    y_start_positions = get_start_positions(original_start_position_y, width, height, window_size, enums.Axis.Y,
                                             overlapping_percentage)
 
     print(x_start_positions)
     print(y_start_positions)
+    print(width)
+    print(height)
+    print(window_size)
 
     total_number_of_patches = len(x_start_positions) * len(y_start_positions)
     tile_number = 1
@@ -59,27 +63,33 @@ def split_to_jpeg_image_patches(full_image_path,
     for x_index, x_start_position in enumerate(x_start_positions):
         for y_index, y_start_position in enumerate(y_start_positions):
 
-            x_end_position = min(width + start_position_x, x_start_position + window_size)
-            y_end_position = min(height + start_position_y, y_start_position + window_size)
+            x_end_position = min(original_start_position_x + width, x_start_position + window_size)
+            y_end_position = min(original_start_position_y + height, y_start_position + window_size)
             patch_width = x_end_position - x_start_position
             patch_height = y_end_position - y_start_position
 
-            print(start_position_x)
-            print(start_position_y)
-            print(width)
-            print(height)
-            print(patch_width)
-            print(patch_height)
 
-            print("==============                                                                         ")
 
             is_image_patch_size_equal_to_window_size = ((patch_height == window_size) and (patch_width == window_size))
             if not is_image_patch_size_equal_to_window_size:
                 continue
 
-            SVS_level_ratio = int(
-                svs_utils.get_SVS_level_ratio(img, enums.ResolutionLevel.LEVEL_0_BASE, resolution_level))
-            patch = img.read_region((x_start_position * SVS_level_ratio, y_start_position * SVS_level_ratio),
+            print("==============")
+
+            print(x_start_position)
+            print(y_start_position)
+            print(patch_width)
+            print(patch_height)
+
+            print("==============")
+            SVS_level_ratio = int(svs_utils.get_SVS_level_ratio(img, resolution_level, enums.ResolutionLevel.LEVEL_0_BASE))
+            svs_x_value = x_start_position * SVS_level_ratio
+            svs_y_value = y_start_position * SVS_level_ratio
+            print("returmed ratio")
+            print(SVS_level_ratio)
+            print(svs_x_value)
+            print(svs_y_value)
+            patch = img.read_region((svs_x_value, svs_y_value),
                                     resolution_level,
                                     (patch_width, patch_height))
             patch.load()

@@ -13,10 +13,7 @@ def get_SVS_level_ratio(svs_image, from_resolution_level, to_resolution_level):
     else:
         to_resolution_level_width = svs_image.level_dimensions[to_resolution_level][0]
 
-    if to_resolution_level >= from_resolution_level:
-        ratio = (to_resolution_level_width / from_resolution_level_width)
-    else:
-        ratio = (from_resolution_level_width / to_resolution_level_width)
+    ratio = (from_resolution_level_width / to_resolution_level_width)
 
     return ratio
 
