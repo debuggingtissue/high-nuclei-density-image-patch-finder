@@ -5,8 +5,9 @@ from utils import svs_utils, image_patch_predictions_constants, image_patch_file
 import csv
 
 
-def get_image_patch_with_highest_saliency_data_dict(full_csv_file_path, svs_image, to_resolution_level):
+def get_image_patch_with_highest_saliency_data_dict(full_csv_file_path):
     case_id = None
+    print(full_csv_file_path)
     with open(full_csv_file_path, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         maximum_prediction_value = 0
@@ -22,20 +23,17 @@ def get_image_patch_with_highest_saliency_data_dict(full_csv_file_path, svs_imag
         resolution_level = int(maximum_prediction_row[image_patch_file_name_constants.RESOLUTION_LEVEL])
         print(resolution_level)
         print(to_resolution_level)
-        x_coordinate = svs_utils.scale(int(maximum_prediction_row[image_patch_file_name_constants.X_COORDINATE]),
-                                       resolution_level, to_resolution_level, svs_image)
-        y_coordinate = svs_utils.scale(int(maximum_prediction_row[image_patch_file_name_constants.Y_COORDINATE]),
-                                       resolution_level, to_resolution_level, svs_image)
-        patching_area_width = svs_utils.scale(int(maximum_prediction_row[image_patch_file_name_constants.WIDTH]),
-                                              resolution_level, to_resolution_level, svs_image)
-        patching_area_height = svs_utils.scale(int(maximum_prediction_row[image_patch_file_name_constants.HEIGHT]),
-                                               resolution_level, to_resolution_level, svs_image)
+        x_coordinate = int(maximum_prediction_row[image_patch_file_name_constants.X_COORDINATE])
+        y_coordinate = int(maximum_prediction_row[image_patch_file_name_constants.Y_COORDINATE])
+        patching_area_width = int(maximum_prediction_row[image_patch_file_name_constants.WIDTH])
+        patching_area_height = int(maximum_prediction_row[image_patch_file_name_constants.HEIGHT])
 
         image_patch_with_highest_saliency_data_dict = {}
         image_patch_with_highest_saliency_data_dict[image_patch_file_name_constants.X_COORDINATE] = x_coordinate
         image_patch_with_highest_saliency_data_dict[image_patch_file_name_constants.Y_COORDINATE] = y_coordinate
         image_patch_with_highest_saliency_data_dict[image_patch_file_name_constants.WIDTH] = patching_area_width
         image_patch_with_highest_saliency_data_dict[image_patch_file_name_constants.HEIGHT] = patching_area_height
+        image_patch_with_highest_saliency_data_dict[image_patch_file_name_constants.RESOLUTION_LEVEL] = resolution_level
 
         return image_patch_with_highest_saliency_data_dict
 
@@ -97,9 +95,7 @@ for full_tcga_download_directories_path_index, full_tcga_download_directory_path
 
 
     svs_image = svs_utils.get_svs_image_of_wsi_from_path(first_image_name_path)
-    image_patch_with_highest_saliency_data_dict = get_image_patch_with_highest_saliency_data_dict(full_csv_file_path,
-                                                                                                  svs_image,
-                                                                                                  to_resolution_level)
+    image_patch_with_highest_saliency_data_dict = get_image_patch_with_highest_saliency_data_dict(full_csv_file_path)
     print(image_patch_with_highest_saliency_data_dict)
     print("HEY")
 
@@ -109,7 +105,7 @@ for full_tcga_download_directories_path_index, full_tcga_download_directory_path
                                              overlapping_percentage,
                                              window_size,
                                              from_resolution_level=image_patch_with_highest_saliency_data_dict[
-                                                 image_patch_file_name_constants.X_COORDINATE],
+                                                 image_patch_file_name_constants.RESOLUTION_LEVEL],
                                              patching_area_x=image_patch_with_highest_saliency_data_dict[
                                                  image_patch_file_name_constants.X_COORDINATE],
                                              patching_area_y=image_patch_with_highest_saliency_data_dict[

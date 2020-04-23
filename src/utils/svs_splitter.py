@@ -73,10 +73,12 @@ def split_to_jpeg_image_patches(full_image_path,
     for x_index, x_start_position in enumerate(x_start_positions_labels):
         for y_index, y_start_position in enumerate(y_start_positions_label):
 
-            x_end_position = min(original_start_position_x + width, x_start_position + window_size)
-            y_end_position = min(original_start_position_y + height, y_start_position + window_size)
+            x_end_position = min(original_start_position_x_label + width, x_start_position + window_size)
+            y_end_position = min(original_start_position_y_label + height, y_start_position + window_size)
             patch_width = x_end_position - x_start_position
             patch_height = y_end_position - y_start_position
+            print("==============")
+
 
             is_image_patch_size_equal_to_window_size = ((patch_height == window_size) and (patch_width == window_size))
             if not is_image_patch_size_equal_to_window_size:
@@ -91,12 +93,16 @@ def split_to_jpeg_image_patches(full_image_path,
 
             print("==============")
             #must always convert to resolution 0 when doing patch extraction
-            svs_x_value = int(svs_utils.scale(x_start_position, to_resolution_level, from_resolution_level, img))
-            svs_y_value = int(svs_utils.scale(y_start_position, to_resolution_level, from_resolution_level, img))
-            print("returmed ratio")
-            print(svs_x_value)
-            print(svs_y_value)
-            patch = img.read_region((svs_x_value, svs_y_value),
+            print(from_resolution_level)
+            print(to_resolution_level)
+            if to_resolution_level != enums.ResolutionLevel.LEVEL_0_BASE:
+                print("lol")
+                x_start_position = int(svs_utils.scale(x_start_position, to_resolution_level, from_resolution_level, img))
+                y_start_position = int(svs_utils.scale(y_start_position, to_resolution_level, from_resolution_level, img))
+            # print("returmed ratio")
+            # print(svs_x_value)
+            # print(svs_y_value)
+            patch = img.read_region((x_start_position, y_start_position),
                                     to_resolution_level,
                                     (patch_width, patch_height))
             patch.load()
