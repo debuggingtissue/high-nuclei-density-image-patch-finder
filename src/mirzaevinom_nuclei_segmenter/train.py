@@ -36,7 +36,6 @@ class KaggleDataset(utils.Dataset):
         path = self.train_path + info['img_name'] + \
             '/images/' + info['img_name'] + '.png'
 
-        print(path)
         img = config.load_img(path, color=color)
 
         return img

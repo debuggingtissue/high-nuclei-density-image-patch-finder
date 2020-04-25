@@ -21,17 +21,14 @@ def draw_prediction_annotations_onto_thumbnail(svs_image, thumbnail, full_cvs_pa
     TINT_COLOR = (0, 255, 0)  # Black
     TRANSPARENCY = .20  # Degree of transparency, 0-100%
     OPACITY = int(255 * TRANSPARENCY)
-    print("yO")
     case_id = None
     with open(full_cvs_path, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             saliency_prediction = float(row[image_patch_predictions_constants.PREDICTION_VALUE_SALIENT])
             case_id = row[image_patch_file_name_constants.CASE_ID]
-            print(saliency_prediction)
 
             if saliency_prediction > accuracy_percentage_threshold:
-                print("Wut")
                 resolution_level = int(row[image_patch_file_name_constants.RESOLUTION_LEVEL])
 
                 x_coordinate = svs_utils.scale(int(row[image_patch_file_name_constants.X_COORDINATE]), resolution_level,
@@ -39,8 +36,6 @@ def draw_prediction_annotations_onto_thumbnail(svs_image, thumbnail, full_cvs_pa
                 y_coordinate = svs_utils.scale(int(row[image_patch_file_name_constants.Y_COORDINATE]), resolution_level,
                                                enums.ResolutionLevel.THUMBNAIL, svs_image)
 
-                print(x_coordinate)
-                print(y_coordinate)
 
                 width = svs_utils.scale(int(row[image_patch_file_name_constants.WIDTH]), resolution_level,
                                         enums.ResolutionLevel.THUMBNAIL, svs_image)
@@ -91,7 +86,6 @@ full_image_patch_data_dict_paths = path_utils.create_full_paths_to_files_in_dire
 for full_tcga_download_directories_path_index, full_tcga_download_directory_path in enumerate(
         full_tcga_download_directory_paths):
     full_image_name_paths = path_utils.create_full_paths_to_files_in_directory_path(full_tcga_download_directory_path)
-    print("hey")
     image_name = full_image_name_paths[0].split('/')[-1][:-4]
     output_path = output_folder_path + '/' + image_name + '/'
     path_utils.create_directory_if_directory_does_not_exist_at_path(output_path)

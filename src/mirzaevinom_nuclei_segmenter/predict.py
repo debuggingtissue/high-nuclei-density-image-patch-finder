@@ -388,9 +388,6 @@ def pred_n_plot_test(model, config_, test_path='../data/stage2_test_final/', out
         # Clean overlaps and apply some post-processing
         result = postprocess_masks(result, image)
 
-        print("HEY")
-        print(len(result['masks']))
-        print("HEY OVER")
         # If there is no masks then try to predict on scaled image
         if result['masks'].sum() < 2:
             H, W = image.shape[:2]

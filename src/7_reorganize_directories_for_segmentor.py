@@ -19,7 +19,6 @@ path_utils.create_directory_if_directory_does_not_exist_at_path(output_folder_pa
 case_directory_paths = path_utils.create_full_paths_to_directories_in_directory_path(input_folder_path)
 
 for case_directory_path in case_directory_paths:
-    print(case_directory_path)
     full_image_patch_paths = path_utils.create_full_paths_to_files_in_directory_path(case_directory_path)
     for full_input_image_patch_path in full_image_patch_paths:
         case_id = full_input_image_patch_path.split('/')[-2]

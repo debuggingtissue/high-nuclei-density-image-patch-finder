@@ -46,11 +46,8 @@ for full_case_path in full_case_paths:
     case_predictions = []
 
     full_image_patches_paths = path_utils.create_full_paths_to_files_in_directory_path(full_case_path)
-    print(full_image_patches_paths)
-    print("SUP")
     loaded_image_patches = load_images_patches_to_caffe(full_image_patches_paths)
     predictions_for_image_patches = predict_saliency_for_loaded_image_patches(loaded_image_patches)
-    print(predictions_for_image_patches)
     case_predictions.append(predictions_for_image_patches)
 
     with open(output_folder_path + '/' + full_case_path.split('/')[-1] + '.csv',

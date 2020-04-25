@@ -7,7 +7,6 @@ import csv
 
 def get_image_patch_with_highest_saliency_data_dict(full_csv_file_path):
     case_id = None
-    print(full_csv_file_path)
     with open(full_csv_file_path, newline='') as csvfile:
         reader = csv.DictReader(csvfile)
         maximum_prediction_value = 0
@@ -19,10 +18,7 @@ def get_image_patch_with_highest_saliency_data_dict(full_csv_file_path):
                 maximum_prediction_value = saliency_prediction
                 maximum_prediction_row = row
 
-        print(maximum_prediction_row)
         resolution_level = int(maximum_prediction_row[image_patch_file_name_constants.RESOLUTION_LEVEL])
-        print(resolution_level)
-        print(to_resolution_level)
         x_coordinate = int(maximum_prediction_row[image_patch_file_name_constants.X_COORDINATE])
         y_coordinate = int(maximum_prediction_row[image_patch_file_name_constants.Y_COORDINATE])
         patching_area_width = int(maximum_prediction_row[image_patch_file_name_constants.WIDTH])
@@ -96,8 +92,6 @@ for full_tcga_download_directories_path_index, full_tcga_download_directory_path
 
     svs_image = svs_utils.get_svs_image_of_wsi_from_path(first_image_name_path)
     image_patch_with_highest_saliency_data_dict = get_image_patch_with_highest_saliency_data_dict(full_csv_file_path)
-    print(image_patch_with_highest_saliency_data_dict)
-    print("HEY")
 
     svs_splitter.split_to_jpeg_image_patches(first_image_name_path,
                                              output_folder_path,
